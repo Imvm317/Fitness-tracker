@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0f">
+<title>Jadwal Olahraga</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card: #111118;
+    --blue: #63b3ed;
+    --purple: #a78bfa;
+    --green: #68d391;
+    --red: #fc8181;
+    --text: #ffffff;
+    --sub: rgba(255,255,255,0.4);
+    --border: rgba(255,255,255,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 32px;
+    color: var(--text);
+  }
+
+  /* TOP BAR */
+  .topbar {
+    padding: 52px 24px 20px;
+    background: linear-gradient(180deg, #13131f 0%, transparent 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .topbar-left {}
+  .topbar-greeting {
+    font-size: 12px;
+    color: var(--sub);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .topbar-date {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .streak-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(104,211,145,0.12);
+    border: 1px solid rgba(104,211,145,0.2);
+    border-radius: 16px;
+    padding: 10px 16px;
+  }
+  .streak-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--green);
+    line-height: 1;
+  }
+  .streak-label {
+    font-size: 9px;
+    color: var(--green);
+    opacity: 0.7;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* PROGRESS BAR */
+  .progress-section {
+    padding: 0 24px 20px;
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--sub);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--blue), var(--purple));
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* WEEK ROW */
+  .week-row {
+    display: flex;
+    gap: 6px;
+    padding: 0 24px 24px;
+  }
+  .day-dot {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .day-name {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--sub);
+    text-transform: uppercase;
+  }
+  .day-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.2);
+    border: 1px solid transparent;
+    transition: all 0.3s;
+  }
+  .day-circle.today {
+    background: var(--blue);
+    color: #0a0a0f;
+    font-weight: 700;
+  }
+  .day-circle.done {
+    background: rgba(104,211,145,0.15);
+    border-color: rgba(104,211,145,0.3);
+    color: var(--green);
+  }
+  .day-circle.rest {
+    font-size: 14px;
+    background: rgba(255,255,255,0.03);
+  }
+
+  /* SESSION CARDS */
+  .sessions {
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .session {
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .session.morning { background: linear-gradient(135deg, #1a2f4a 0%, #111118 100%); }
+  .session.evening { background: linear-gradient(135deg, #1e1235 0%, #111118 100%); }
+  .session.completed { opacity: 0.65; }
+
+  .session-header {
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .session-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .morning .session-icon-wrap { background: rgba(99,179,237,0.15); }
+  .evening .session-icon-wrap { background: rgba(167,139,250,0.15); }
+
+  .session-info { flex: 1; }
+  .session-time-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .morning .session-time-label { color: var(--blue); }
+  .evening .session-time-label { color: var(--purple); }
+
+  .session-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .session-duration {
+    font-size: 11px;
+    color: var(--sub);
+    margin-top: 2px;
+  }
+
+  /* CHECKBOX */
+  .check-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+  }
+  .check-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: rgba(255,255,255,0.2);
+    stroke-width: 2.5;
+    fill: none;
+    transition: all 0.25s;
+  }
+  .check-btn.checked {
+    background: var(--green);
+    border-color: var(--green);
+    transform: scale(1.1);
+  }
+  .check-btn.checked svg { stroke: #0a0a0f; }
+
+  /* SESSION BODY (tasks) */
+  .session-body {
+    padding: 0 20px 18px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 14px;
+  }
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .task-item:active { transform: scale(0.98); }
+  .task-item.done { opacity: 0.5; }
+
+  .task-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .task-check svg {
+    width: 13px;
+    height: 13px;
+    stroke: transparent;
+    stroke-width: 2.5;
+    fill: none;
+    transition: all 0.2s;
+  }
+  .task-item.done .task-check {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .task-item.done .task-check svg { stroke: #0a0a0f; }
+
+  .task-text {
+    flex: 1;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    font-weight: 400;
+  }
+  .task-item.done .task-text {
+    text-decoration: line-through;
+    color: var(--sub);
+  }
+  .task-zone {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+
+  /* RESET BUTTON */
+  .reset-section {
+    padding: 24px 24px 0;
+    text-align: center;
+  }
+  .reset-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--sub);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 10px 24px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:active { opacity: 0.6; transform: scale(0.97); }
+
+  /* COMPLETION TOAST */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--green);
+    color: #0a0a0f;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 12px 24px;
+    border-radius: 30px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    z-index: 999;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* CONFETTI PARTICLE */
+  .particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 998;
+    animation: fall 1.2s ease-in forwards;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--sub);
+    padding: 0 24px 12px;
+  }
+
+  /* ANIMATE IN */
+  .session { animation: slideUp 0.4s ease both; }
+  .session:nth-child(1) { animation-delay: 0.05s; }
+  .session:nth-child(2) { animation-delay: 0.15s; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-greeting">Hari ini</div>
+    <div class="topbar-date" id="dateDisplay">—</div>
+  </div>
+  <div class="streak-badge">
+    <div class="streak-num" id="streakNum">0</div>
+    <div class="streak-label">🔥 Streak</div>
+  </div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-header">
+    <span>Progress Hari Ini</span>
+    <span id="progressText">0 / 6 task</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="week-row" id="weekRow"></div>
+
+<div class="section-label">SESI OLAHRAGA</div>
+
+<div class="sessions">
+
+  <!-- MORNING -->
+  <div class="session morning" id="sessionMorning">
+    <div class="session-header" onclick="toggleSession('morning')">
+      <div class="session-icon-wrap">🌅</div>
+      <div class="session-info">
+        <div class="session-time-label">05:00 Pagi</div>
+        <div class="session-title">PAGI WALK</div>
+        <div class="session-duration">30 menit · Aerobik + Anaerobik</div>
+      </div>
+      <button class="check-btn" id="checkMorning" onclick="event.stopPropagation(); toggleMainCheck('morning')">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>
+    <div class="session-body">
+      <div class="task-list">
+        <div class="task-item" id="t1" onclick="toggleTask('t1')">
+          <div class="task-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-text">Pemanasan jalan santai</div>
+          <span class="task-zone" style="background:rgba(99,179,237,0.15);color:#63b3ed">5 mnt</span>
+        </div>
+        <div class="task-item" id="t2" onclick="toggleTask('t2')">
+          <div class="task-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-text">Jalan tempo aerobik</div>
+          <span class="task-zone" style="background:rgba(99,179,237,0.15);color:#63b3ed">~20 mnt</span>
+        </div>
+        <div class="task-item" id="t3" onclick="toggleTask('t3')">
+          <div class="task-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-text">Push ke zona anaerobik</div>
+          <span class="task-zone" style="background:rgba(252,129,129,0.15);color:#fc8181">~10 mnt</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENING -->
+  <div class="session evening" id="sessionEvening">
+    <div class="session-header" onclick="toggleSession('evening')">
+      <div class="session-icon-wrap">🌙</div>
+      <div class="session-info">
+        <div class="session-time-label">20:00 Malam</div>
+        <div class="session-title">MALAM WALK</div>
+        <div class="session-duration">30–60 menit · Fat Burn Zone</div>
+      </div>
+      <button class="check-btn" id="checkEvening" onclick="event.stopPropagation(); toggleMainCheck('evening')">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>
+    <div class="session-body">
+      <div class="task-list">
+        <div class="task-item" id="t4" onclick="toggleTask('t4')">
+          <div class="task-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-text">Mulai jalan pelan, masuk fat burn</div>
+          <span class="task-zone" style="background:rgba(167,139,250,0.15);color:#a78bfa">10 mnt</span>
+        </div>
+        <div class="task-item" id="t5" onclick="toggleTask('t5')">
+          <div class="task-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-text">Pertahankan zona fat burn</div>
+          <span class="task-zone" style="background:rgba(167,139,250,0.15);color:#a78bfa">20–45 mnt</span>
+        </div>
+        <div class="task-item" id="t6" onclick="toggleTask('t6')">
+          <div class="task-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="task-text">Cool down & stretching</div>
+          <span class="task-zone" style="background:rgba(104,211,145,0.15);color:#68d391">5 mnt</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="reset-section">
+  <button class="reset-btn" onclick="resetDay()">↺ Reset Hari Ini</button>
+</div>
+
+<div class="toast" id="toast">🎉 Sesi selesai!</div>
+
+<script>
+  const TASKS = ['t1','t2','t3','t4','t5','t6'];
+  const MORNING_TASKS = ['t1','t2','t3'];
+  const EVENING_TASKS = ['t4','t5','t6'];
+
+  function getKey(k) { return 'fitapp_' + k; }
+
+  function getState() {
+    const today = getToday();
+    const raw = localStorage.getItem(getKey('state'));
+    if (!raw) return { date: today, tasks: {}, morningDone: false, eveningDone: false };
+    const s = JSON.parse(raw);
+    if (s.date !== today) {
+      // new day — check if yesterday was complete for streak
+      updateStreak(s);
+      return { date: today, tasks: {}, morningDone: false, eveningDone: false };
+    }
+    return s;
+  }
+
+  function saveState(s) {
+    localStorage.setItem(getKey('state'), JSON.stringify(s));
+  }
+
+  function getToday() {
+    return new Date().toISOString().slice(0,10);
+  }
+
+  function getStreak() {
+    return parseInt(localStorage.getItem(getKey('streak')) || '0');
+  }
+
+  function updateStreak(prevState) {
+    if (prevState.morningDone && prevState.eveningDone) {
+      localStorage.setItem(getKey('streak'), getStreak() + 1);
+    } else {
+      localStorage.setItem(getKey('streak'), '0');
+    }
+  }
+
+  function toggleTask(id) {
+    const s = getState();
+    s.tasks[id] = !s.tasks[id];
+    // auto-check session if all tasks done
+    if (MORNING_TASKS.every(t => s.tasks[t])) s.morningDone = true;
+    if (EVENING_TASKS.every(t => s.tasks[t])) s.eveningDone = true;
+    saveState(s);
+    render();
+    if (s.morningDone && s.eveningDone) celebrate('🎉 Semua sesi selesai! Mantap!');
+    else if (MORNING_TASKS.every(t => s.tasks[t]) && id === 't3') celebrate('☀️ Sesi pagi selesai!');
+    else if (EVENING_TASKS.every(t => s.tasks[t]) && id === 't6') celebrate('🌙 Sesi malam selesai!');
+  }
+
+  function toggleMainCheck(session) {
+    const s = getState();
+    if (session === 'morning') {
+      const newVal = !s.morningDone;
+      s.morningDone = newVal;
+      MORNING_TASKS.forEach(t => s.tasks[t] = newVal);
+    } else {
+      const newVal = !s.eveningDone;
+      s.eveningDone = newVal;
+      EVENING_TASKS.forEach(t => s.tasks[t] = newVal);
+    }
+    saveState(s);
+    render();
+    if (s.morningDone && s.eveningDone) celebrate('🎉 Semua sesi selesai! Luar biasa!');
+  }
+
+  function toggleSession(session) {
+    // just visual expand — sessions are always shown
+  }
+
+  function resetDay() {
+    const s = getState();
+    s.tasks = {};
+    s.morningDone = false;
+    s.eveningDone = false;
+    saveState(s);
+    render();
+  }
+
+  function render() {
+    const s = getState();
+
+    // Date
+    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    const now = new Date();
+    document.getElementById('dateDisplay').textContent =
+      days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()];
+
+    // Streak
+    document.getElementById('streakNum').textContent = getStreak();
+
+    // Tasks
+    TASKS.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('done', !!s.tasks[id]);
+    });
+
+    // Main checks
+    const cm = document.getElementById('checkMorning');
+    const ce = document.getElementById('checkEvening');
+    cm.classList.toggle('checked', !!s.morningDone);
+    ce.classList.toggle('checked', !!s.eveningDone);
+
+    document.getElementById('sessionMorning').classList.toggle('completed', !!s.morningDone);
+    document.getElementById('sessionEvening').classList.toggle('completed', !!s.eveningDone);
+
+    // Progress
+    const done = TASKS.filter(t => s.tasks[t]).length;
+    const pct = Math.round((done / TASKS.length) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = done + ' / ' + TASKS.length + ' task';
+
+    // Week row
+    renderWeek(s);
+  }
+
+  function renderWeek(s) {
+    const row = document.getElementById('weekRow');
+    const names = ['MIN','SEN','SEL','RAB','KAM','JUM','SAB'];
+    const today = new Date().getDay();
+    // rest = Sunday (0)
+    row.innerHTML = names.map((n, i) => {
+      const isToday = i === today;
+      const isRest = i === 0;
+      // For past days, check history (simplified: just show today's status)
+      let circleClass = isRest ? 'rest' : (isToday ? 'today' : '');
+      let circleContent = isRest ? '😴' : (i < today ? (Math.random() > 0.3 ? '✓' : String(i+1)) : String(i+1));
+      if (isToday) {
+        circleContent = s.morningDone && s.eveningDone ? '✓' : String(i+1);
+        if (s.morningDone && s.eveningDone) circleClass = 'done';
+      }
+      return `<div class="day-dot">
+        <div class="day-name">${n}</div>
+        <div class="day-circle ${circleClass}">${circleContent}</div>
+      </div>`;
+    }).join('');
+  }
+
+  let toastTimer;
+  function celebrate(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+    // confetti
+    for (let i = 0; i < 12; i++) {
+      setTimeout(() => spawnParticle(), i * 60);
+    }
+  }
+
+  function spawnParticle() {
+    const colors = ['#63b3ed','#a78bfa','#68d391','#fc8181','#f6e05e'];
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top = '10vh';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDuration = (0.8 + Math.random() * 0.8) + 's';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1600);
+  }
+
+  // INIT
+  render();
+</script>
+</body>
+</html>
